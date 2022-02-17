@@ -1,3 +1,3 @@
-module github.com/jackpal/gateway
+module github.com/LauZero/gateway
 
-go 1.14
+go 1.17
