@@ -172,6 +172,28 @@ func parseWindowsInterfaceIP(output []byte) (net.IP, error) {
 	return ip, nil
 }
 
+func parseWindowsInterfaceNameIP(output []byte, devs map[string]string) (string, error) {
+	parsedOutput, err := parseToWindowsRouteStruct(output)
+	if err != nil {
+		return "", err
+	}
+	iifs, err := net.Interfaces()
+	if err != nil {
+		return "", err
+	}
+	for _, iif := range iifs {
+		if addrs, err := iif.Addrs(); err == nil {
+			for _, addr := range addrs {
+				if parsedOutput.Interface == strings.Split(addr.String(), "/")[0] {
+					mac := strings.ReplaceAll(strings.ToUpper(iif.HardwareAddr.String()), ":", "-")
+					return devs[mac], nil
+				}
+			}
+		}
+	}
+	return "", errCantParse
+}
+
 func parseLinuxGatewayIP(output []byte) (net.IP, error) {
 
 	parsedStruct, err := parseToLinuxRouteStruct(output)
@@ -224,6 +246,15 @@ func parseLinuxInterfaceIP(output []byte) (net.IP, error) {
 	return ip, nil
 }
 
+func parseLinuxInterfaceNameIP(output []byte) (string, error) {
+	parsedStruct, err := parseToLinuxRouteStruct(output)
+	if err != nil {
+		return "", err
+	}
+
+	return parsedStruct.Iface, nil
+}
+
 func parseDarwinRouteGet(output []byte) (net.IP, error) {
 	// Darwin route out format is always like this:
 	//    route to: default
@@ -242,6 +273,27 @@ func parseDarwinRouteGet(output []byte) (net.IP, error) {
 	}
 
 	return nil, errNoGateway
+}
+
+func parseDarwinInterfaceGet(output []byte) (string, error) {
+	// Darwin route out format is always like this:
+	//    route to: default
+	// destination: default
+	//        mask: default
+	//     gateway: 192.168.8.1
+	//   interface: en8
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) >= 2 && fields[0] == "interface:" {
+			iif := fields[1]
+			if iif != "" {
+				return iif, nil
+			}
+		}
+	}
+
+	return "", errNoGateway
 }
 
 func parseBSDSolarisNetstat(output []byte) (net.IP, error) {

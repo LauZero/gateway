@@ -1,3 +1,4 @@
+//go:build darwin
 // +build darwin
 
 package gateway
@@ -19,4 +20,13 @@ func discoverGatewayOSSpecific() (net.IP, error) {
 
 func discoverGatewayInterfaceOSSpecific() (ip net.IP, err error) {
 	return nil, errNotImplemented
+}
+
+func discoverGatewayInterfaceNameOSSpecific() (name string, err error) {
+	routeCmd := exec.Command("/sbin/route", "-n", "get", "0.0.0.0")
+	output, err := routeCmd.CombinedOutput()
+	if err != nil {
+		return "", err
+	}
+	return parseDarwinInterfaceGet(output)
 }

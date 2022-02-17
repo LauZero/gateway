@@ -1,3 +1,4 @@
+//go:build linux
 // +build linux
 
 package gateway
@@ -40,4 +41,18 @@ func discoverGatewayInterfaceOSSpecific() (ip net.IP, err error) {
 		return nil, fmt.Errorf("Can't read %s", file)
 	}
 	return parseLinuxInterfaceIP(bytes)
+}
+
+func discoverGatewayInterfaceNameOSSpecific() (name string, err error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return "", fmt.Errorf("Can't access %s", file)
+	}
+	defer f.Close()
+
+	bytes, err := ioutil.ReadAll(f)
+	if err != nil {
+		return "", fmt.Errorf("Can't read %s", file)
+	}
+	return parseLinuxInterfaceNameIP(bytes)
 }

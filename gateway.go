@@ -21,3 +21,7 @@ func DiscoverGateway() (ip net.IP, err error) {
 func DiscoverInterface() (ip net.IP, err error) {
 	return discoverGatewayInterfaceOSSpecific()
 }
+
+func DiscoverInterfaceName() (name string, err error) {
+	return discoverGatewayInterfaceNameOSSpecific()
+}
