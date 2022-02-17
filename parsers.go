@@ -186,7 +186,7 @@ func parseWindowsInterfaceNameIP(output []byte, devs map[string]string) (string,
 			for _, addr := range addrs {
 				if parsedOutput.Interface == strings.Split(addr.String(), "/")[0] {
 					mac := strings.ReplaceAll(strings.ToUpper(iif.HardwareAddr.String()), ":", "-")
-					return devs[mac], nil
+					return strings.ReplaceAll(devs[mac], "Tcpip", "NPF"), nil
 				}
 			}
 		}
